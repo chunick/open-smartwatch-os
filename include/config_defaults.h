@@ -205,6 +205,9 @@
 /*
  * Apps:
  */
+#ifndef GAME_WORDLE
+#define GAME_WORDLE 1
+#endif
 #ifndef GAME_SNAKE
 #define GAME_SNAKE 0
 #endif

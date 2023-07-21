@@ -79,7 +79,7 @@ OswConfigKeyRGB themeWarningColor("c6", "Theme & UI", "Warning color", nullptr, 
 OswConfigKeyRGB themeDangerColor("c7", "Theme & UI", "Danger color", nullptr, THEME_DANGER_COLOR);
 
 OswConfigKeyDropDown dateFormat("e", "Date & Time", "Date format", {"mm/dd/yyyy", "dd.mm.yyyy", "yy.mm/dd"}, CONFIG_DATE_FORMAT);
-OswConfigKeyBool timeFormat("g", "Date & Time", "Use 24h time format?", nullptr, true);
+OswConfigKeyBool timeFormat("g", "Date & Time", "Use 24h time format?", nullptr, false);
 OswConfigKeyString timezonePrimary("p1", "Date & Time", "Primary Timezone", "Empty = UTC0, use values from https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv", CONFIG_TIMEZONE_PRIMARY);
 OswConfigKeyString timezoneSecondary("p2", "Date & Time", "Secondary Timezone", nullptr, CONFIG_TIMEZONE_SECONDARY);
 #if OSW_PLATFORM_ENVIRONMENT_ACCELEROMETER == 1
