@@ -64,9 +64,6 @@ void OswAppWordle::drawMenu(OswHal* hal) {
 }
 
 void OswAppWordle::drawGame(OswHal* hal) {
-    hal->gfx()->setTextCursor(40, 40);
-    hal->gfx()->print(wordToGuess);
-
     int y = 50;
     for (int i = 0; i < 6; i++) {
         std::vector<uint16_t> letterColors = getLetterColors(i);
