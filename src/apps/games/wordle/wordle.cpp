@@ -6,13 +6,20 @@
 #include <string.h>
 #include <vector>
 
+bool debug = false;
+
 void OswAppWordle::setup() {
     dictionary = new Dictionary();
     menu = new WordleMenu();
+    initialize();
+}
+
+void OswAppWordle::initialize() {
     menu->initialize();
     wordToGuess = dictionary->getRandomWord();
     selectedRowIndex = 0;
     selectedColIndex = 0;
+    gameState = IN_PROGRESS;
 
     guesses.clear();
     for (int i = 0; i < 6; i++) {
@@ -30,30 +37,37 @@ void OswAppWordle::loop() {
 }
 
 void OswAppWordle::handleInput(OswHal* hal) {
-    if(hal->btnIsLongPress(BUTTON_3)) {
-        menu->setBtnLongPressState(true, BUTTON_3);
-    }
-    if (hal->btnHasGoneUp(BUTTON_3)) {
-        if (menu->btnIsLongPressed(BUTTON_3)) {
-            menu->toggleLetterMenu();
-            menu->setBtnLongPressState(false, BUTTON_3);
-        } else {
-            menu->toggleNextLetter();
+    if (gameState == IN_PROGRESS) {
+        if(hal->btnIsLongPress(BUTTON_3)) {
+            menu->setBtnLongPressState(true, BUTTON_3);
         }
-    }
-    if(hal->btnIsLongPress(BUTTON_2)) {
-        menu->setBtnLongPressState(true, BUTTON_2);
-    }
-    if (hal->btnHasGoneUp(BUTTON_2)) {
-        if (menu->btnIsLongPressed(BUTTON_2)) {
-            submitGuess();
-            menu->setBtnLongPressState(false, BUTTON_2);
-        } else {
-            toggleNextCol();
+        if (hal->btnHasGoneUp(BUTTON_3)) {
+            if (menu->btnIsLongPressed(BUTTON_3)) {
+                menu->toggleLetterMenu();
+                menu->setBtnLongPressState(false, BUTTON_3);
+            } else {
+                menu->toggleNextLetter();
+            }
         }
-    }
-    if (hal->btnHasGoneUp(BUTTON_1)) {
-        setLetter(selectedColIndex, menu->getCurrentLetter());
+        if(hal->btnIsLongPress(BUTTON_2)) {
+            menu->setBtnLongPressState(true, BUTTON_2);
+        }
+        if (hal->btnHasGoneUp(BUTTON_2)) {
+            if (menu->btnIsLongPressed(BUTTON_2)) {
+                submitGuess();
+                menu->setBtnLongPressState(false, BUTTON_2);
+            } else {
+                toggleNextCol();
+            }
+        }
+        if (hal->btnHasGoneUp(BUTTON_1)) {
+            setLetter(selectedColIndex, menu->getCurrentLetter());
+        }
+    } else {
+        if (hal->btnHasGoneUp(BUTTON_1) || hal->btnHasGoneUp(BUTTON_2) || hal->btnHasGoneUp(BUTTON_3)) {
+            // restart game on button press
+            initialize();
+        }
     }
 }
 
@@ -64,22 +78,35 @@ void OswAppWordle::drawMenu(OswHal* hal) {
 }
 
 void OswAppWordle::drawGame(OswHal* hal) {
-    int y = 50;
-    for (int i = 0; i < 6; i++) {
-        std::vector<uint16_t> letterColors = getLetterColors(i);
-        hal->gfx()->setTextSize(2);
-        int x = 70;
-        hal->gfx()->setTextCursor(x, y);
-        for (int j = 0; j < 5; j++) {
-            uint16_t lineColor = selectedColIndex == j && selectedRowIndex == i ? rgb565(0, 255, 0) : rgb565(255, 255, 255);
+    if (debug) {
+        hal->gfx()->setTextCursor(35, 40);
+        hal->gfx()->setTextSize(1);
+        hal->gfx()->print(wordToGuess);
+    }
+    if (gameState == IN_PROGRESS) {
+        int y = 50;
+        for (int i = 0; i < 6; i++) {
+            std::vector<uint16_t> letterColors = getLetterColors(i);
+            hal->gfx()->setTextSize(2);
+            int x = 75;
             hal->gfx()->setTextCursor(x, y);
-            hal->gfx()->drawHLine(x, y + 4, 10, lineColor);
-            hal->gfx()->setTextCursor(x, y);
-            hal->gfx()->setTextColor(letterColors[j]);
-            hal->gfx()->print(guesses[i][j]);
-            x +=20;
+            for (int j = 0; j < 5; j++) {
+                uint16_t lineColor = selectedColIndex == j && selectedRowIndex == i ? rgb565(0, 255, 0) : rgb565(255, 255, 255);
+                hal->gfx()->setTextCursor(x, y);
+                hal->gfx()->drawHLine(x, y + 4, 10, lineColor);
+                hal->gfx()->setTextCursor(x, y);
+                hal->gfx()->setTextColor(letterColors[j]);
+                hal->gfx()->print(guesses[i][j]);
+                x +=20;
+            }
+            y += 30;
         }
-        y += 30;
+    } else {
+        uint16_t textColor = gameState == WIN ? rgb565(0, 255, 0) : rgb565(255, 0, 0);
+        hal->gfx()->setTextCursor(90, 130);
+        hal->gfx()->setTextColor(textColor);
+        hal->gfx()->setTextSize(2);
+        hal->gfx()->print(wordToGuess);
     }
 }
 
@@ -154,12 +181,23 @@ void OswAppWordle::submitGuess() {
         }
     }
 
-    if (guesses[selectedRowIndex] == wordToGuess) {
-        // todo - win state
-    }else if (selectedRowIndex < 5) {
+    if (wordMatchesWordToGuess(guesses[selectedRowIndex])) {
+        gameState = WIN;
+    } else if (selectedRowIndex < 5) {
         selectedRowIndex++;
         selectedColIndex = 0;
+    } else {
+        gameState = LOSE;
     }
+}
+
+bool OswAppWordle::wordMatchesWordToGuess(std::string guess) {
+    for(int i = 0; i < 5; i++) {
+        if ((wordToGuess[i] - 32) != guess[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void OswAppWordle::toggleNextCol() {

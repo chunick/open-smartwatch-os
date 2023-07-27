@@ -13,20 +13,30 @@ class OswAppWordle : public OswApp {
     virtual void setup() override;
     virtual void loop() override;
     virtual void stop() override;
-    void drawMenu(OswHal* hal);
-    void handleInput(OswHal* hal);
-    void setLetter(int index, char letter);
-    void submitGuess();
-    void drawGame(OswHal* hal);
-    void toggleNextCol();
-    std::vector<uint16_t> getLetterColors(int row);
 
   private:
+    enum GameState {
+        IN_PROGRESS,
+        WIN,
+        LOSE
+    };
+
     Dictionary* dictionary;
     WordleMenu* menu;
     std::vector<std::string> guesses;
     std::string wordToGuess;
     int selectedRowIndex;
     int selectedColIndex;
+    GameState gameState;
+
+    void drawMenu(OswHal* hal);
+    void handleInput(OswHal* hal);
+    void setLetter(int index, char letter);
+    void submitGuess();
+    void drawGame(OswHal* hal);
+    void toggleNextCol();
+    void initialize();
+    std::vector<uint16_t> getLetterColors(int row);
+    bool wordMatchesWordToGuess(std::string guess);
 };
 #endif
