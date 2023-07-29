@@ -38,5 +38,6 @@ class OswAppWordle : public OswApp {
     void initialize();
     std::vector<uint16_t> getLetterColors(int row);
     bool wordMatchesWordToGuess(std::string guess);
+    void printCString(std::string string, OswHal* hal);
 };
 #endif

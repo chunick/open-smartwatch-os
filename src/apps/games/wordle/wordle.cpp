@@ -81,7 +81,7 @@ void OswAppWordle::drawGame(OswHal* hal) {
     if (debug) {
         hal->gfx()->setTextCursor(35, 40);
         hal->gfx()->setTextSize(1);
-        hal->gfx()->print(wordToGuess);
+        printCString(wordToGuess, hal);
     }
     if (gameState == IN_PROGRESS) {
         int y = 50;
@@ -106,7 +106,7 @@ void OswAppWordle::drawGame(OswHal* hal) {
         hal->gfx()->setTextCursor(90, 130);
         hal->gfx()->setTextColor(textColor);
         hal->gfx()->setTextSize(2);
-        hal->gfx()->print(wordToGuess);
+        printCString(wordToGuess, hal);
     }
 }
 
@@ -188,6 +188,12 @@ void OswAppWordle::submitGuess() {
         selectedColIndex = 0;
     } else {
         gameState = LOSE;
+    }
+}
+
+void OswAppWordle::printCString(std::string string, OswHal* hal) {
+    for (int i = 0; i < string.length(); i++) {
+        hal->gfx()->print(string[i]);
     }
 }
 
